@@ -1,7 +1,7 @@
 import pandas as pd
 import default_classifier
 
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.1
 EPOCH = 5
 INIT_WEIGHT = 0.2
 INIT_BIAS = 0.2
@@ -19,10 +19,21 @@ versicolor_test = df_versicolor.iloc[40:]
 
 train_df = pd.concat([setosa_train, versicolor_train])
 
+train_df["target"] = train_df.apply(
+    lambda row: 0 if row["Species"] == "Iris-setosa" else 1, axis=1
+)
+
 classifier = default_classifier.DefaultClassifier()
-classifier.fit(
+result = classifier.fit(
     train_df,
+    LEARNING_RATE,
     INIT_WEIGHT,
     INIT_BIAS,
     ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
+    "target",
 )
+
+print(result.weight)
+print(result.bias)
+print(result.MSE())
+print(result.Accuracy())

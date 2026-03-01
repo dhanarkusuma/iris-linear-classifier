@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import pandas as pd
+import training_result
 from numpy.typing import NDArray
 
 
@@ -17,12 +18,24 @@ class DefaultClassifier:
         else:
             return 0
 
-    def update_weight(self, y: float, y_hat: float, x: NDArray[np.float64]):
-        base = self.update_bias(y, y_hat)
-        delta = x * base
-        return delta
+    def update_weight(
+        self,
+        lr: float,
+        weight: NDArray[np.float64],
+        y: float,
+        y_hat: float,
+        x: NDArray[np.float64],
+    ):
+        base = self.delta_bias(y, y_hat) * x
+        new_weight = weight - (lr * base)
+        return new_weight
 
-    def update_bias(self, y: float, y_hat: float):
+    def update_bias(self, lr: float, bias: float, y: float, y_hat: float):
+        base = self.delta_bias(y, y_hat)
+        new_bias = bias - (lr * base)
+        return new_bias
+
+    def delta_bias(self, y: float, y_hat: float):
         return 2 * (y_hat - y) * (1 - y_hat) * y_hat
 
     def squared_error(self, y: float, y_hat: float):
@@ -31,9 +44,11 @@ class DefaultClassifier:
     def fit(
         self,
         datasets: pd.DataFrame,
+        learning_rate: float,
         init_weight: float,
         init_bias: float,
         feature_columns: list,
+        target_column: str,
     ):
         theta = []
         i = 0
@@ -43,7 +58,10 @@ class DefaultClassifier:
         bias = init_bias
         weight = np.array(theta)
 
-        for index, row in datasets.iterrows():
+        squared_errors = []
+        verdicts = []
+        total_index, _ = datasets.shape
+        for i, (_, row) in enumerate(datasets.iterrows()):
             x = []
             for col in feature_columns:
                 x.append(row[col])
@@ -51,6 +69,24 @@ class DefaultClassifier:
 
             h = self.h(weight=weight, x=x, bias=bias)
             sigmoid = self.sigmoid(h)
-            predict = self.predict(sigmoid)
+            y_label = float(row[target_column])  # type: ignore
 
-        return 0
+            squared_error = self.squared_error(y_label, sigmoid)
+            squared_errors.append(squared_error)
+
+            predict = self.predict(sigmoid)
+            verdict = predict == y_label
+            verdicts.append(verdict)
+
+            if i < total_index - 1:
+                weight = self.update_weight(learning_rate, weight, y_label, sigmoid, x)
+                bias = self.update_bias(learning_rate, bias, y_label, sigmoid)
+
+        result = training_result.TrainingResult(
+            n=total_index,
+            weight=weight,
+            bias=bias,
+            squared_error=np.array(squared_errors),
+            verdict=np.array(verdicts),
+        )
+        return result
