@@ -1,5 +1,6 @@
 import pandas as pd
 import default_classifier
+import matplotlib.pyplot as plt
 
 LEARNING_RATE = 0.1
 EPOCH = 5
@@ -33,162 +34,85 @@ test_df["target"] = test_df.apply(
 
 classifier = default_classifier.DefaultClassifier()
 
-# EPOCH 1
-print("\n========================")
-print("Training Epoch 1")
-result_epoch_1 = classifier.fit(
-    train_df,
-    LEARNING_RATE,
-    INIT_WEIGHT,
-    INIT_BIAS,
-    ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-    "target",
-    1,
-)
+train_mse_list = []
+test_mse_list = []
+train_acc_list = []
+test_acc_list = []
 
-print(f"Epoch 1 Weight: {result_epoch_1.GetWeight()}")
-print(f"Epoch 1 Bias: {result_epoch_1.GetBias()}")
-print(f"Epoch 1 Training MSE: {result_epoch_1.GetMSEPerEpoch()}")
-print(f"Epoch 1 Training Accuracy: {result_epoch_1.GetAccuracyPerEpoch()}")
-print("-------------------------")
+feature_cols = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
 
-# Inference EPOCH 1
-print("Inference Epoch 1")
-result_inference = classifier.inference(
-    test_df,
-    result_epoch_1.weight,
-    result_epoch_1.bias,
-    ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-    "target",
-)
-print(f"Inference Epoch 1 Accuracy: {result_inference.Accuracy()}")
-print(f"Inference Epoch 1 MSE: {result_inference.MSE()}")
-print("========================")
+for epoch in range(1, EPOCH + 1):
+    print("\n========================")
+    print(f"Training Epoch {epoch}")
 
-# EPOCH 2
-print("\n========================")
-print("Training Epoch 2")
-result_epoch_2 = classifier.fit(
-    train_df,
-    LEARNING_RATE,
-    INIT_WEIGHT,
-    INIT_BIAS,
-    ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-    "target",
-    2,
-)
+    result = classifier.fit(
+        train_df,
+        LEARNING_RATE,
+        INIT_WEIGHT,
+        INIT_BIAS,
+        feature_cols,
+        "target",
+        epoch,
+    )
 
-print(f"Epoch 2 Weight: {result_epoch_2.GetWeight()}")
-print(f"Epoch 2 Bias: {result_epoch_2.GetBias()}")
-print(f"Epoch 2 Training MSE: {result_epoch_2.GetMSEPerEpoch()}")
-print(f"Epoch 2 Training Accuracy: {result_epoch_2.GetAccuracyPerEpoch()}")
-print("-------------------------")
+    # training metric
+    train_mse = result.mse_last_epoch
+    train_acc = result.accuracy_last_epoch
 
-# Inference EPOCH 2
-print("Inference Epoch 2")
-result_inference = classifier.inference(
-    test_df,
-    result_epoch_2.weight,
-    result_epoch_2.bias,
-    ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-    "target",
-)
-print(f"Inference Epoch 2 Accuracy: {result_inference.Accuracy()}")
-print(f"Inference Epoch 2 MSE: {result_inference.MSE()}")
-print("========================")
+    train_mse_list.append(train_mse)
+    train_acc_list.append(train_acc)
 
-# EPOCH 3
-print("\n========================")
-print("Training Epoch 3")
-result_epoch_3 = classifier.fit(
-    train_df,
-    LEARNING_RATE,
-    INIT_WEIGHT,
-    INIT_BIAS,
-    ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-    "target",
-    3,
-)
+    print(f"Epoch {epoch} Training MSE: {train_mse}")
+    print(f"Epoch {epoch} Training Accuracy: {train_acc}")
 
-print(f"Epoch 3 Weight: {result_epoch_3.GetWeight()}")
-print(f"Epoch 3 Bias: {result_epoch_3.GetBias()}")
-print(f"Epoch 3 Training MSE: {result_epoch_3.GetMSEPerEpoch()}")
-print(f"Epoch 3 Training Accuracy: {result_epoch_3.GetAccuracyPerEpoch()}")
-print("-------------------------")
+    # inference
+    result_inference = classifier.inference(
+        test_df,
+        result.weight,
+        result.bias,
+        feature_cols,
+        "target",
+    )
 
-# Inference EPOCH 3
-print("Inference Epoch 3")
-result_inference = classifier.inference(
-    test_df,
-    result_epoch_3.weight,
-    result_epoch_3.bias,
-    ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-    "target",
-)
-print(f"Inference Epoch 3 Accuracy: {result_inference.Accuracy()}")
-print(f"Inference Epoch 3 MSE: {result_inference.MSE()}")
-print("========================")
+    test_mse = result_inference.MSE()
+    test_acc = result_inference.Accuracy()
 
-# EPOCH 4
-print("\n========================")
-print("Training Epoch 4")
-result_epoch_4 = classifier.fit(
-    train_df,
-    LEARNING_RATE,
-    INIT_WEIGHT,
-    INIT_BIAS,
-    ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-    "target",
-    4,
-)
+    test_mse_list.append(test_mse)
+    test_acc_list.append(test_acc)
 
-print(f"Epoch 4 Weight: {result_epoch_4.GetWeight()}")
-print(f"Epoch 4 Bias: {result_epoch_4.GetBias()}")
-print(f"Epoch 4 Training MSE: {result_epoch_4.GetMSEPerEpoch()}")
-print(f"Epoch 4 Training Accuracy: {result_epoch_4.GetAccuracyPerEpoch()}")
-print("-------------------------")
+    print(f"Inference Epoch {epoch} Accuracy: {test_acc}")
+    print(f"Inference Epoch {epoch} MSE: {test_mse}")
+    print("========================")
 
-# Inference EPOCH 4
-print("Inference Epoch 4")
-result_inference = classifier.inference(
-    test_df,
-    result_epoch_4.weight,
-    result_epoch_4.bias,
-    ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-    "target",
-)
-print(f"Inference Epoch 4 Accuracy: {result_inference.Accuracy()}")
-print(f"Inference Epoch 4 MSE: {result_inference.MSE()}")
-print("========================")
 
-# EPOCH 5
-print("\n========================")
-print("Training Epoch 5")
-result_epoch_5 = classifier.fit(
-    train_df,
-    LEARNING_RATE,
-    INIT_WEIGHT,
-    INIT_BIAS,
-    ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-    "target",
-    5,
-)
+print(train_mse_list)
+print(test_mse_list)
+train_mse_list = [float(x) for x in train_mse_list]
+test_mse_list = [float(x) for x in test_mse_list]
+train_acc_list = [float(x) for x in train_acc_list]
+test_acc_list = [float(x) for x in test_acc_list]
+epochs = list(range(1, len(train_mse_list) + 1))
 
-print(f"Epoch 5 Weight: {result_epoch_5.GetWeight()}")
-print(f"Epoch 5 Bias: {result_epoch_5.GetBias()}")
-print(f"Epoch 5 Training MSE: {result_epoch_5.GetMSEPerEpoch()}")
-print(f"Epoch 5 Training Accuracy: {result_epoch_5.GetAccuracyPerEpoch()}")
-print("-------------------------")
+# Plot Error
+plt.figure()
+plt.plot(epochs, train_mse_list)
+plt.plot(epochs, test_mse_list)
+plt.xlabel("Epoch")
+plt.ylabel("MSE")
+plt.title("Training vs Testing Error")
+plt.legend(["Training", "Testing"])
+plt.xticks(epochs)
+plt.grid(True)
+plt.show()
 
-# Inference EPOCH 5
-print("Inference Epoch 5")
-result_inference = classifier.inference(
-    test_df,
-    result_epoch_5.weight,
-    result_epoch_5.bias,
-    ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-    "target",
-)
-print(f"Inference Epoch 5 Accuracy: {result_inference.Accuracy()}")
-print(f"Inference Epoch 5 MSE: {result_inference.MSE()}")
-print("========================")
+# Plot Accuracy
+plt.figure()
+plt.plot(epochs, train_acc_list)
+plt.plot(epochs, test_acc_list)
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
+plt.title("Training vs Testing Accuracy")
+plt.legend(["Training", "Testing"])
+plt.xticks(epochs)
+plt.grid(True)
+plt.show()

@@ -17,7 +17,7 @@ class TrainingResult:
         self.verdict = verdict
 
     def MSE(self):
-        return self.squared_error.sum() / self.n
+        return float(self.squared_error.sum() / self.n)
 
     def Accuracy(self):
-        return self.verdict.sum() / self.n
+        return float(self.verdict.sum() / self.n)

@@ -97,8 +97,8 @@ class DefaultClassifier:
         weight = np.array(theta)
         results = []
 
-        mse_per_epoch = []
-        accuracy_per_epoch = []
+        mse_last_epoch = 0
+        accuracy_last_epoch = 0
         for e in range(epoch):
             squared_errors = []
             verdicts = []
@@ -134,14 +134,15 @@ class DefaultClassifier:
                 verdict=np.array(verdicts),
             )
             results.append(result)
-            mse_per_epoch.append(result.MSE())
-            accuracy_per_epoch.append(result.Accuracy())
+            if e == epoch - 1:
+                mse_last_epoch = result.MSE()
+                accuracy_last_epoch = result.Accuracy()
 
         last_result = results[len(results) - 1]
         last_weight = last_result.weight
         bias = last_result.bias
 
         e_result = epoch_result.EpochResult(
-            last_weight, bias, mse_per_epoch, accuracy_per_epoch
+            last_weight, bias, mse_last_epoch, accuracy_last_epoch
         )
         return e_result

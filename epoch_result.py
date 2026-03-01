@@ -6,22 +6,10 @@ class EpochResult:
         self,
         weight: NDArray,
         bias: float,
-        mse_per_epoch: list,
-        accuracy_per_epoch: list,
+        mse_last_epoch: float,
+        accuracy_last_epoch: float,
     ):
         self.weight = weight
         self.bias = bias
-        self.mse_per_epoch = mse_per_epoch
-        self.accuracy_per_epoch = accuracy_per_epoch
-
-    def GetWeight(self):
-        return self.weight
-
-    def GetBias(self):
-        return self.bias
-
-    def GetMSEPerEpoch(self):
-        return self.mse_per_epoch
-
-    def GetAccuracyPerEpoch(self):
-        return self.accuracy_per_epoch
+        self.mse_last_epoch = mse_last_epoch
+        self.accuracy_last_epoch = accuracy_last_epoch
