@@ -103,6 +103,7 @@ plt.title("Training vs Testing Error")
 plt.legend(["Training", "Testing"])
 plt.xticks(epochs)
 plt.grid(True)
+plt.savefig("results/training_vs_testing_mse.png", dpi=300)
 plt.show()
 
 # Plot Accuracy
@@ -115,4 +116,5 @@ plt.title("Training vs Testing Accuracy")
 plt.legend(["Training", "Testing"])
 plt.xticks(epochs)
 plt.grid(True)
+plt.savefig("results/training_vs_testing_accuracy.png", dpi=300)
 plt.show()
