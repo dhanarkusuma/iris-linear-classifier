@@ -85,8 +85,6 @@ for epoch in range(1, EPOCH + 1):
     print("========================")
 
 
-print(train_mse_list)
-print(test_mse_list)
 train_mse_list = [float(x) for x in train_mse_list]
 test_mse_list = [float(x) for x in test_mse_list]
 train_acc_list = [float(x) for x in train_acc_list]
