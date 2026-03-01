@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import training_result
 import inference_result
+import epoch_result
 from numpy.typing import NDArray
 
 
@@ -94,36 +95,53 @@ class DefaultClassifier:
             i += 1
         bias = init_bias
         weight = np.array(theta)
+        results = []
 
-        squared_errors = []
-        verdicts = []
-        total_index, _ = datasets.shape
-        for i, (_, row) in enumerate(datasets.iterrows()):
-            x = []
-            for col in feature_columns:
-                x.append(row[col])
-            x = np.array(x)
+        mse_per_epoch = []
+        accuracy_per_epoch = []
+        for e in range(epoch):
+            squared_errors = []
+            verdicts = []
+            total_index, _ = datasets.shape
+            for i, (_, row) in enumerate(datasets.iterrows()):
+                x = []
+                for col in feature_columns:
+                    x.append(row[col])
+                x = np.array(x)
 
-            h = self.h(weight=weight, x=x, bias=bias)
-            sigmoid = self.sigmoid(h)
-            y_label = float(row[target_column])  # type: ignore
+                h = self.h(weight=weight, x=x, bias=bias)
+                sigmoid = self.sigmoid(h)
+                y_label = float(row[target_column])  # type: ignore
 
-            squared_error = self.squared_error(y_label, sigmoid)
-            squared_errors.append(squared_error)
+                squared_error = self.squared_error(y_label, sigmoid)
+                squared_errors.append(squared_error)
 
-            predict = self.predict(sigmoid)
-            verdict = predict == y_label
-            verdicts.append(verdict)
+                predict = self.predict(sigmoid)
+                verdict = predict == y_label
+                verdicts.append(verdict)
 
-            if i < total_index - 1:
-                weight = self.update_weight(learning_rate, weight, y_label, sigmoid, x)
-                bias = self.update_bias(learning_rate, bias, y_label, sigmoid)
+                if i < total_index - 1:
+                    weight = self.update_weight(
+                        learning_rate, weight, y_label, sigmoid, x
+                    )
+                    bias = self.update_bias(learning_rate, bias, y_label, sigmoid)
 
-        result = training_result.TrainingResult(
-            n=total_index,
-            weight=weight,
-            bias=bias,
-            squared_error=np.array(squared_errors),
-            verdict=np.array(verdicts),
+            result = training_result.TrainingResult(
+                n=total_index,
+                weight=weight,
+                bias=bias,
+                squared_error=np.array(squared_errors),
+                verdict=np.array(verdicts),
+            )
+            results.append(result)
+            mse_per_epoch.append(result.MSE())
+            accuracy_per_epoch.append(result.Accuracy())
+
+        last_result = results[len(results) - 1]
+        last_weight = last_result.weight
+        bias = last_result.bias
+
+        e_result = epoch_result.EpochResult(
+            last_weight, bias, mse_per_epoch, accuracy_per_epoch
         )
-        return result
+        return e_result
