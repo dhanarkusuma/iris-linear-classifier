@@ -2,6 +2,7 @@ import math
 import numpy as np
 import pandas as pd
 import training_result
+import inference_result
 from numpy.typing import NDArray
 
 
@@ -41,6 +42,41 @@ class DefaultClassifier:
     def squared_error(self, y: float, y_hat: float):
         return math.pow((y - y_hat), 2)
 
+    def inference(
+        self,
+        test_datasets: pd.DataFrame,
+        weight: NDArray,
+        bias: float,
+        feature_columns: list,
+        target_column: str,
+    ):
+        squared_errors = []
+        verdicts = []
+        total_index, _ = test_datasets.shape
+        for _, row in test_datasets.iterrows():
+            x = []
+            for col in feature_columns:
+                x.append(row[col])
+            x = np.array(x)
+
+            h = self.h(weight=weight, x=x, bias=bias)
+            sigmoid = self.sigmoid(h)
+            y_label = float(row[target_column])  # type: ignore
+
+            squared_error = self.squared_error(y_label, sigmoid)
+            squared_errors.append(squared_error)
+
+            predict = self.predict(sigmoid)
+            verdict = predict == y_label
+            verdicts.append(verdict)
+
+        result = inference_result.InferenceResult(
+            n=total_index,
+            squared_error=np.array(squared_errors),
+            verdict=np.array(verdicts),
+        )
+        return result
+
     def fit(
         self,
         datasets: pd.DataFrame,
@@ -49,6 +85,7 @@ class DefaultClassifier:
         init_bias: float,
         feature_columns: list,
         target_column: str,
+        epoch: int,
     ):
         theta = []
         i = 0
